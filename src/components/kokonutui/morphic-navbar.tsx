@@ -20,8 +20,9 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+const Link = (props: any) => <a {...props} />;
+import { useLocation } from "@tanstack/react-router";
+const usePathname = () => useLocation({ select: (l) => l.pathname });
 import {
   type FocusEvent,
   type KeyboardEvent,

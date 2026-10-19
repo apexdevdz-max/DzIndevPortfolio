@@ -11,7 +11,7 @@
  * @github: https://github.com/kokonut-labs/kokonutui
  */
 
-import Link from "next/link";
+const Link = (props: any) => <a {...props} />;
 import { cn } from "@/lib/utils";
 
 interface SlideTextButtonProps
