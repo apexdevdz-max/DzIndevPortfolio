@@ -38,6 +38,7 @@ function Index() {
   const [lightsOn, setLightsOn] = useState(false);
   useEffect(() => {
     document.documentElement.classList.toggle("light", lightsOn);
+    document.documentElement.classList.toggle("dark", !lightsOn);
   }, [lightsOn]);
 
   return (
@@ -61,11 +62,11 @@ function Index() {
       <section id="accueil" className="relative h-screen min-h-[640px] overflow-hidden">
         <DotField className="absolute inset-0" interactive>
           <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Équipe de développeurs web</p>
+            <p className="font-mono text-sm font-medium uppercase tracking-[0.3em] text-primary">Équipe de développeurs web</p>
             <h1 className="font-display mt-6 text-6xl font-bold tracking-tighter md:text-8xl">DZINDEV</h1>
             <TypewriterTitle
               as="h2"
-              className="mt-6 font-mono text-lg text-muted-foreground md:text-2xl"
+              className="mt-6 font-mono text-lg text-foreground/85 md:text-2xl"
               autoLoop
               sequences={[
                 { text: "Nous créons des sites web.", deleteAfter: true },
