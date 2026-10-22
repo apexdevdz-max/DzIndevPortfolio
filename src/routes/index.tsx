@@ -130,10 +130,112 @@ function Index() {
         </div>
       </section>
 
-      <footer className="border-t border-border px-6 py-8 text-center font-mono text-xs text-muted-foreground">
-        © 2026 DZINDEV — Tous droits réservés
-      </footer>
+      <SiteFooter />
     </div>
+  );
+}
+
+const footerNav = [
+  {
+    t: "Navigation",
+    links: [
+      { label: "Accueil", href: "#accueil" },
+      { label: "Projets", href: "#projets" },
+      { label: "Services", href: "#services" },
+      { label: "Contact", href: "#contact" },
+    ],
+  },
+  {
+    t: "Services",
+    links: [
+      { label: "Sites web", href: "#services" },
+      { label: "Applications", href: "#services" },
+      { label: "E-commerce", href: "#services" },
+      { label: "UI / UX", href: "#services" },
+    ],
+  },
+];
+
+const socials = [
+  { label: "GitHub", href: "https://github.com", Icon: Github },
+  { label: "LinkedIn", href: "https://linkedin.com", Icon: Linkedin },
+  { label: "X", href: "https://x.com", Icon: Twitter },
+  { label: "Dribbble", href: "https://dribbble.com", Icon: Dribbble },
+];
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-border bg-card/40">
+      <div className="mx-auto max-w-6xl px-6 py-20">
+        <div className="grid gap-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+          <div>
+            <a href="#accueil" className="font-display text-2xl font-bold tracking-tight">
+              DZIN<span className="text-primary">DEV</span>
+            </a>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Équipe de développeurs web. Nous concevons et développons des sites et applications rapides, clairs et sur mesure.
+            </p>
+            <div className="mt-6 flex gap-3">
+              {socials.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  className="rounded-full border border-border p-2.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {footerNav.map((col) => (
+            <div key={col.t}>
+              <h4 className="font-mono text-xs uppercase tracking-[0.3em] text-primary">{col.t}</h4>
+              <ul className="mt-6 space-y-3">
+                {col.links.map((l) => (
+                  <li key={l.label + l.href}>
+                    <a href={l.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div>
+            <h4 className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Contact</h4>
+            <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+              <li>
+                <a href="mailto:contact@dzindev.com" className="inline-flex items-center gap-2 transition-colors hover:text-foreground">
+                  <Mail className="h-4 w-4" /> contact@dzindev.com
+                </a>
+              </li>
+              <li className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4" /> Lagos, Nigeria
+              </li>
+            </ul>
+            <div className="mt-6">
+              <SlideTextButton text="Démarrer un projet" hoverText="Écrivez-nous →" href="mailto:contact@dzindev.com" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 font-mono text-xs text-muted-foreground sm:flex-row">
+          <p>© {new Date().getFullYear()} DZINDEV — Tous droits réservés</p>
+          <p className="hidden sm:block">Conçu et développé par l'équipe DZINDEV</p>
+          <a
+            href="#accueil"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 transition-colors hover:border-primary hover:text-primary"
+          >
+            Haut de page <ArrowUp className="h-3.5 w-3.5" />
+          </a>
+        </div>
+      </div>
+    </footer>
   );
 }
 
