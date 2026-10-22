@@ -98,8 +98,8 @@
   --secondary-foreground: oklch(0.2 0.01 150);
   --muted: oklch(0.92 0.02 120);
   --muted-foreground: oklch(0.45 0.01 150);
-  --border: oklch(0.8 0.01 120);
-  --input: oklch(0.8 0.01 120);
+  --border: oklch(0.72 0.015 130);
+  --input: oklch(0.72 0.015 130);
 }
 
 @theme inline {
