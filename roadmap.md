@@ -1,0 +1,3 @@
+- [x] Corriger la navigation et le texte animé sur mobile.
+- [x] Harmoniser les espacements et le pied de page sur petits écrans.
+- [x] Vérifier la navigation, les deux thèmes et l’affichage mobile et ordinateur.
