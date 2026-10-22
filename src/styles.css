@@ -92,14 +92,14 @@
   --foreground: oklch(0.16 0.01 150);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.16 0.01 150);
-  --primary: oklch(0.55 0.17 135);
+  --primary: oklch(0.45 0.16 135);
   --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.92 0.02 120);
   --secondary-foreground: oklch(0.2 0.01 150);
   --muted: oklch(0.92 0.02 120);
   --muted-foreground: oklch(0.45 0.01 150);
-  --border: oklch(0.88 0.01 120);
-  --input: oklch(0.88 0.01 120);
+  --border: oklch(0.8 0.01 120);
+  --input: oklch(0.8 0.01 120);
 }
 
 @theme inline {
