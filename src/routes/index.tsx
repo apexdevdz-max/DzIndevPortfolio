@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { ArrowUp, Dribbble, Github, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
 import DotField from "@/components/kokonutui/dot-field";
 import MorphicNavbar from "@/components/kokonutui/morphic-navbar";
 import PullCord from "@/components/kokonutui/pull-cord";
