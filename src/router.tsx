@@ -8,7 +8,10 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: { queryClient },
-    scrollRestoration: true,
+    // Disabled: scroll restoration fights with the sticky scrollytelling
+    // section and causes upward-scroll jumps at section boundaries.
+    scrollRestoration: false,
+    hashScrollIntoView: false,
     defaultPreloadStaleTime: 0,
   });
 

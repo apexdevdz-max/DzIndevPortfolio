@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowUp, Dribbble, Github, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUp, Dribbble, ExternalLink, Github, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
+import { motion, useScroll, useTransform, useMotionValueEvent, useReducedMotion, type MotionValue } from "motion/react";
 import DotField from "@/components/kokonutui/dot-field";
 import MorphicNavbar from "@/components/kokonutui/morphic-navbar";
 import PullCord from "@/components/kokonutui/pull-cord";
@@ -23,10 +24,46 @@ export const Route = createFileRoute("/")({
 });
 
 const projects = [
-  { title: "Nova Commerce", tag: "E-commerce", year: "2026", desc: "Boutique en ligne headless, paiement intégré et back-office temps réel.", stack: ["React", "Node", "Stripe"] },
-  { title: "Atlas Dashboard", tag: "SaaS", year: "2025", desc: "Tableau de bord analytique pour équipes logistiques, 40k utilisateurs.", stack: ["TypeScript", "Postgres", "Charts"] },
-  { title: "Kora Studio", tag: "Site vitrine", year: "2025", desc: "Identité web animée pour un studio d'architecture à Lagos.", stack: ["Next", "GSAP", "CMS"] },
-  { title: "Pulse Mobile", tag: "Web app", year: "2024", desc: "PWA de réservation de salles de sport avec notifications push.", stack: ["PWA", "Firebase", "Tailwind"] },
+  {
+    title: "Shein Outlet",
+    tag: "E-commerce",
+    desc: "Plateforme de vente en ligne avec catalogue produits, recherche et système de panier intégré.",
+    stack: ["React", "E-commerce", "Responsive"],
+    url: "https://sheinoutlet.netlify.app/",
+    image: "/projects/shein-outlet.png",
+  },
+  {
+    title: "La Perle de Béthussy",
+    tag: "Site vitrine",
+    desc: "Site élégant pour un restaurant, avec menu, réservation et présentation de l'établissement.",
+    stack: ["Design", "Restaurant", "SEO"],
+    url: "https://la-perle-de-bethusy.netlify.app/",
+    image: "/projects/la-perle-de-bethusy.png",
+  },
+  {
+    title: "Rawaq",
+    tag: "Site vitrine",
+    desc: "Interface moderne et minimaliste pour une marque créative, design soigné et animations fluides.",
+    stack: ["UI/UX", "Animations", "Branding"],
+    url: "https://heroic-kringle-ce91e4.netlify.app/",
+    image: "/projects/rawaq.png",
+  },
+  {
+    title: "La Mie Dorée",
+    tag: "Restaurant",
+    desc: "Vitrine de spécialités pour une boulangerie-pâtisserie, avec catalogue détaillé des produits.",
+    stack: ["Vitrine", "Catalogue", "CMS"],
+    url: "https://lamiedoree-demo.netlify.app/specialites",
+    image: "/projects/la-mie-doree.png",
+  },
+  {
+    title: "Florentin",
+    tag: "Boulangerie",
+    desc: "Site complet pour une boulangerie-pâtisserie et salon de thé, avec carte et horaires.",
+    stack: ["Next.js", "Design", "Responsive"],
+    url: "https://florentin-demo.netlify.app/",
+    image: "/projects/florentin.png",
+  },
 ];
 
 const services = [
@@ -42,6 +79,30 @@ function Index() {
     document.documentElement.classList.toggle("light", lightsOn);
     document.documentElement.classList.toggle("dark", !lightsOn);
   }, [lightsOn]);
+
+  // Scroll-spy: tell the navbar which section is in view via a custom
+  // event.  We must NOT touch window.location.hash or history here —
+  // changing the URL hash triggers the browser's native scroll-to-fragment
+  // logic and causes upward-scroll jumps.
+  useEffect(() => {
+    const ids = ["accueil", "projets", "services", "contact"];
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0) {
+            window.dispatchEvent(
+              new CustomEvent("activeSection", { detail: `#${entry.target.id}` }),
+            );
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 },
+    );
+    for (const el of els) io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -86,25 +147,7 @@ function Index() {
         </DotField>
       </section>
 
-      <section id="projets" className="mx-auto max-w-6xl px-5 py-16 md:px-6 md:py-28">
-        <SectionTitle k="Portfolio" t="Projets sélectionnés" />
-        <div className="mt-8 grid gap-4 md:mt-14 md:grid-cols-2 md:gap-6">
-          {projects.map((p, i) => (
-            <article key={p.title} className="group min-w-0 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary md:p-8">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 font-mono text-xs text-muted-foreground">
-                <span>0{i + 1} · {p.tag}</span><span>{p.year}</span>
-              </div>
-              <h3 className="font-display mt-6 text-2xl font-semibold group-hover:text-primary md:mt-10 md:text-3xl">{p.title}</h3>
-              <p className="mt-3 text-muted-foreground">{p.desc}</p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {p.stack.map((s) => (
-                  <span key={s} className="rounded-full bg-secondary px-3 py-1 font-mono text-xs text-secondary-foreground">{s}</span>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <ProjectsSection />
 
       <section id="services" className="border-y border-border bg-card/40">
         <div className="mx-auto max-w-6xl px-5 py-16 md:px-6 md:py-28">
@@ -219,7 +262,7 @@ function SiteFooter() {
                 </a>
               </li>
               <li className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4" /> Lagos, Nigeria
+                <MapPin className="h-4 w-4" /> Oran, Algérie
               </li>
             </ul>
             <div className="mt-6">
@@ -249,5 +292,157 @@ function SectionTitle({ k, t }: { k: string; t: string }) {
       <p className="font-mono text-xs uppercase text-primary">{k}</p>
       <h2 className="font-display mt-3 text-3xl font-bold md:mt-4 md:text-6xl">{t}</h2>
     </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Scroll-pinned Projects section
+   ────────────────────────────────────────────────────────────────────── */
+
+const PROJ_COUNT = projects.length;
+
+function ProjectsSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+  const [activeIndex, setActiveIndex] = useState(0);
+  const reducedMotion = useReducedMotion();
+  const progressHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    setActiveIndex(Math.min(Math.floor(v * PROJ_COUNT), PROJ_COUNT - 1));
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      id="projets"
+      className="relative"
+      style={{ height: `${PROJ_COUNT * 100}dvh` }}
+    >
+      {/* Sticky viewport — the only visible layer while pinned */}
+      <div className="sticky top-0 flex h-dvh w-full flex-col overflow-hidden bg-background pb-8 md:pb-12">
+        {/* Section header — sits below the fixed navbar */}
+        <div className="mx-auto w-full max-w-6xl shrink-0 px-5 pt-20 md:px-6 md:pt-28">
+          <SectionTitle k="Portfolio" t="Projets sélectionnés" />
+        </div>
+
+        {/* Cards viewport — flex-1 min-h-0 lets it shrink to fit */}
+        <div className="relative mx-auto mt-6 w-full max-w-6xl min-h-0 flex-1 px-5 md:mt-8 md:px-6">
+          {projects.map((p, i) => (
+            <ScrollCard
+              key={p.title}
+              project={p}
+              index={i}
+              scrollProgress={scrollYProgress}
+              isActive={activeIndex === i}
+              reducedMotion={reducedMotion ?? false}
+            />
+          ))}
+        </div>
+
+        {/* Progress indicator — vertically centred with the card area */}
+        <div className="pointer-events-none absolute bottom-8 right-3 top-[40%] z-20 flex -translate-y-1/4 flex-col items-center justify-center gap-2 md:bottom-12 md:right-8">
+          <span className="font-mono text-[11px] tabular-nums text-foreground/50">
+            {String(activeIndex + 1).padStart(2, "0")}
+          </span>
+          <div className="h-16 w-px overflow-hidden rounded-full bg-foreground/10 md:h-20">
+            <motion.div className="w-full rounded-full bg-primary" style={{ height: progressHeight }} />
+          </div>
+          <span className="font-mono text-[11px] tabular-nums text-foreground/50">
+            {String(PROJ_COUNT).padStart(2, "0")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** A single project card whose opacity / y / scale are driven by scroll progress. */
+function ScrollCard({
+  project: p,
+  index,
+  scrollProgress,
+  isActive,
+  reducedMotion,
+}: {
+  project: (typeof projects)[0];
+  index: number;
+  scrollProgress: MotionValue<number>;
+  isActive: boolean;
+  reducedMotion: boolean;
+}) {
+  const n = PROJ_COUNT;
+  const s = index / n;
+  const e = (index + 1) / n;
+  const fade = 0.35 / n; // 35 % of each segment used for transition
+  const first = index === 0;
+  const last = index === n - 1;
+
+  /* ── opacity: first card starts at 1, last stays at 1 ── */
+  const oKeys = [...(first ? [s] : [s, s + fade]), ...(last ? [e] : [e - fade, e])];
+  const oVals = [...(first ? [1] : [0, 1]), ...(last ? [1] : [1, 0])] as number[];
+  const opacity = useTransform(scrollProgress, oKeys, oVals);
+
+  /* ── y / scale: slide up and shrink during transitions ── */
+  const tKeys = first ? [e - fade, e] : last ? [s, s + fade] : [s, s + fade, e - fade, e];
+  const y = useTransform(
+    scrollProgress,
+    tKeys,
+    reducedMotion
+      ? tKeys.map(() => 0)
+      : first
+        ? [0, -60]
+        : last
+          ? [60, 0]
+          : [60, 0, 0, -60],
+  );
+  const scale = useTransform(
+    scrollProgress,
+    tKeys,
+    reducedMotion
+      ? tKeys.map(() => 1)
+      : first
+        ? [1, 0.96]
+        : last
+          ? [0.96, 1]
+          : [0.96, 1, 1, 0.96],
+  );
+
+  return (
+    <motion.div
+      className={`absolute inset-0 overflow-hidden rounded-[28px] shadow-2xl ${!isActive ? "pointer-events-none" : ""}`}
+      style={{ opacity, y, scale }}
+    >
+      <img
+        src={p.image}
+        alt={`Capture d'écran du projet ${p.title}`}
+        className="absolute inset-0 h-full w-full object-cover object-top"
+        loading={index === 0 ? "eager" : "lazy"}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+      <div className="relative z-10 flex h-full flex-col justify-end p-5 text-white md:p-8">
+        <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider text-white/70">
+          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-0.5 backdrop-blur-sm">{p.tag}</span>
+        </div>
+        <h3 className="font-display mt-3 text-2xl font-bold sm:text-3xl md:text-4xl">{p.title}</h3>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/75 md:text-base">{p.desc}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {p.stack.map((st) => (
+            <span key={st} className="rounded-full bg-white/10 px-3 py-1 font-mono text-xs text-white/80 backdrop-blur-sm">{st}</span>
+          ))}
+          <a
+            href={p.url}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 font-mono text-xs font-semibold text-zinc-900 transition-transform hover:scale-105"
+          >
+            Voir le site <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+    </motion.div>
   );
 }

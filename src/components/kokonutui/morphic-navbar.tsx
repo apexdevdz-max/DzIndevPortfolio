@@ -1,5 +1,4 @@
 // @ts-nocheck
-"use client";
 
 /**
  * @author: @dorianbaffier
@@ -188,9 +187,7 @@ const releaseVelocity = (samples: DragState["samples"], now: number) => {
   return ((last.x - first.x) / (last.t - first.t)) * 1000;
 };
 
-/** A square patch that hides a rounded corner while the neighbour touches. */
-const capScale = (gap: number, fold: number) =>
-  `scaleX(${round2(clamp(1 - gap / 1.5, 0, 1) * (1 - clamp(fold * 4, 0, 1)))})`;
+
 
 /** Where each key sends keyboard focus, from index `i` of `n` links. */
 const KEY_MOVES: Record<string, (i: number, n: number) => number> = {
@@ -226,9 +223,13 @@ const followHash = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
   if (!target) {
     return;
   }
-  target.scrollIntoView();
+  // Explicit smooth scroll (CSS scroll-behavior: smooth was removed to
+  // prevent the browser from auto-scrolling to fragments on state changes).
+  // Use replaceState (not pushState) so TanStack Router doesn't create a
+  // new history entry that its scroll restoration logic would try to revisit.
+  target.scrollIntoView({ behavior: "smooth" });
   if (window.location.hash !== href) {
-    window.history.pushState(null, "", href);
+    window.history.replaceState(null, "", href);
   }
 };
 
@@ -287,16 +288,24 @@ function Segment({
   const opacity = useTransform(() =>
     pinned ? 1 : round2(clamp(1 - fold.get() * 1.8, 0, 1))
   );
-  const leftCap = useTransform(() =>
-    prevX ? capScale(x.get() - prevX.get(), fold.get()) : "scaleX(0)"
-  );
-  const rightCap = useTransform(() =>
-    nextX ? capScale(nextX.get() - x.get(), fold.get()) : "scaleX(0)"
-  );
-  // Next's Link scrolls the page when a hash matches no element, so in-page
-  // anchors use a plain <a>, handled by `followHash`.
+
+  // Dynamic border-radius: flat where a neighbour touches, rounded where
+  // space opens.  When the bar folds the radius returns to full on every side.
+  const borderRadius = useTransform(() => {
+    const R = 12; // matches Tailwind rounded-xl (0.75 rem)
+    const f = fold.get();
+    const leftGap = prevX
+      ? Math.abs(x.get() - prevX.get()) + f * SPLIT
+      : SPLIT;
+    const rightGap = nextX
+      ? Math.abs(nextX.get() - x.get()) + f * SPLIT
+      : SPLIT;
+    const lr = round2(Math.min(R, (leftGap / SPLIT) * R));
+    const rr = round2(Math.min(R, (rightGap / SPLIT) * R));
+    return `${lr}px ${rr}px ${rr}px ${lr}px`;
+  });
+
   const isHash = href.startsWith("#");
-  const NavLink = isHash ? "a" : Link;
 
   return (
     <motion.div
@@ -309,10 +318,10 @@ function Segment({
       onPointerLeave={(event) => onHover(event, false)}
       style={{ transform, opacity }}
     >
-      <NavLink
+      <motion.a
         aria-current={current ? "page" : undefined}
         className={cn(
-          "relative flex h-9 items-center rounded-xl px-4 font-medium text-sm transition-colors duration-150",
+          "relative flex h-9 items-center px-4 font-medium text-sm transition-colors duration-150",
           SURFACE,
           FOCUS_RING,
           highlighted
@@ -322,36 +331,17 @@ function Segment({
         draggable={false}
         href={href}
         inert={hidden}
-        onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+        onClick={(event) => {
           onSelect();
           if (isHash) {
             followHash(event, href);
           }
         }}
-        onDragStart={(event: MouseEvent) => event.preventDefault()}
+        onDragStart={(event) => event.preventDefault()}
         onFocus={onFocus}
         ref={linkRef}
+        style={{ borderRadius }}
       >
-        {prevX ? (
-          <motion.span
-            aria-hidden="true"
-            className={cn(
-              "absolute inset-y-0 -left-px w-3 origin-left",
-              SURFACE
-            )}
-            style={{ transform: leftCap }}
-          />
-        ) : null}
-        {nextX ? (
-          <motion.span
-            aria-hidden="true"
-            className={cn(
-              "absolute inset-y-0 -right-px w-3 origin-right",
-              SURFACE
-            )}
-            style={{ transform: rightCap }}
-          />
-        ) : null}
         <span className="relative">{name}</span>
         <span
           aria-hidden="true"
@@ -360,7 +350,7 @@ function Segment({
             highlighted ? "scale-x-100" : "scale-x-0"
           )}
         />
-      </NavLink>
+      </motion.a>
     </motion.div>
   );
 }
@@ -439,6 +429,21 @@ export function MorphicNavbar({
       setActivePath(routePath);
     }
   }
+
+  // Sync active item with the scroll-spy. The page dispatches a custom
+  // "activeSection" event (instead of changing the URL hash, which would
+  // trigger the browser's native scroll-to-fragment and cause jumps).
+  useEffect(() => {
+    const onSection = (e: Event) => {
+      const hash = (e as CustomEvent<string>).detail;
+      if (hash && paths.includes(hash)) {
+        setActivePath(hash);
+      }
+    };
+    window.addEventListener("activeSection", onSection);
+    return () => window.removeEventListener("activeSection", onSection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paths.join(",")]);
 
   const activeIndex = paths.indexOf(findItemPath(paths, activePath) ?? "");
   /** Where a scrub or keyboard focus has moved the split, before committing. */
@@ -705,6 +710,7 @@ export function MorphicNavbar({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: same as above */}
       <div
         className="relative flex touch-pan-y select-none items-center"
+        style={{ isolation: 'isolate' }}
         onBlur={onRowBlur}
         onClickCapture={onClickCapture}
         onKeyDown={onKeyDown}
