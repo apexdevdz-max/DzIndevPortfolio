@@ -5,7 +5,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import netlify from "@netlify/vite-plugin-tanstack-start";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     devtools(),
     tanstackStart({
@@ -13,7 +13,7 @@ export default defineConfig({
       // nitro/vite builds from this
       server: { entry: "server" },
     }),
-    netlify(),
+    ...(command === "build" ? [netlify()] : []),
     react(),
     tailwindcss(),
   ],
@@ -21,4 +21,4 @@ export default defineConfig({
     dedupe: ["react", "react-dom", "@tanstack/react-router"],
     tsconfigPaths: true,
   },
-});
+}));
